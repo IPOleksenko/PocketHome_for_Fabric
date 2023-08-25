@@ -1,0 +1,18 @@
+[versions]
+minecraft = "1.20.1"
+yarn_mappings = "1.20.1+build.10"
+fabric_loader = "0.14.22"
+fabric_api = "0.87.0+1.20.1"
+fabric_loom = "1.2.+"
+
+git = "3.0.+"
+
+[libraries]
+minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
+# yarn_mappings = { module = "net.fabricmc:yarn", version.ref = "yarn_mappings" }
+fabric_loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric_loader" }
+fabric_api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric_api" }
+
+[plugins]
+fabric_loom = { id = "fabric-loom", version.ref = "fabric_loom" }
+git = { id = "com.palantir.git-version", version.ref = "git" }

@@ -1,0 +1,29 @@
+{
+	"schemaVersion": 1,
+	"id": "pockethome",
+	"version": "${version}",
+	"name": "PocketHome",
+	"description": "O kurwa rakieta!",
+	"authors": [
+		"IPOleksenko",
+		"rvbsm"
+	],
+	"contact": {
+		"sources": "https://github.com/ipoleksenko/PocketHome_For_Fabric",
+		"issues": "https://github.com/ipoleksenko/PocketHome_For_Fabric/issues"
+	},
+	"license": "MIT",
+	"icon": "assets/pockethome/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"dev.ipoleksenko.pockethome.PocketHomeMod"
+		]
+	},
+	"mixins": [
+		"pockethome.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.14.0"
+	}
+}

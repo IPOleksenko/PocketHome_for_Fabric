@@ -14,7 +14,7 @@ repositories {
 loom {
 	splitEnvironmentSourceSets()
 
-	mods.register("pockethome") {
+	mods.register(rootProject.name) {
 		sourceSet(sourceSets["main"])
 	}
 }

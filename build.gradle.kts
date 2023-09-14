@@ -8,15 +8,16 @@ plugins {
 group = "dev.ipoleksenko"
 version = gitVersion()
 
-repositories {
-}
-
-loom {
+//loom {
 //	splitEnvironmentSourceSets()
 //
 //	mods.register(rootProject.name) {
 //		sourceSet(sourceSets["main"])
 //	}
+//}
+
+repositories {
+	maven("https://maven.nucleoid.xyz/")
 }
 
 dependencies {
@@ -25,6 +26,8 @@ dependencies {
 
 	modImplementation(libs.fabric.loader)
 	modImplementation(libs.fabric.api)
+
+	modImplementation(libs.fantasy)
 
 //	setOf("fabric-events-interaction-v0").forEach {
 //		modImplementation(fabricApi.module(it, libs.versions.fabric.api.get()))

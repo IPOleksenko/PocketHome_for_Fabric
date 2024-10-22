@@ -5,7 +5,6 @@
 ## Description
 
 PocketHome is a plugin that adds private areas for all players where they can build freely.
-Also, players can invite guests in their pockets or link pockets in one super-pocket
 
 ## Build
 

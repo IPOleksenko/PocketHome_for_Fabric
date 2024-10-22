@@ -5,6 +5,8 @@ fabric_loader = "0.14.22"
 fabric_api = "0.87.0+1.20.1"
 fabric_loom = "1.2.+"
 
+fantasy = "0.4.11+1.20-rc1"
+
 git = "3.0.+"
 
 [libraries]
@@ -12,6 +14,8 @@ minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
 # yarn_mappings = { module = "net.fabricmc:yarn", version.ref = "yarn_mappings" }
 fabric_loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric_loader" }
 fabric_api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric_api" }
+
+fantasy = { module = "xyz.nucleoid:fantasy", version.ref = "fantasy" }
 
 [plugins]
 fabric_loom = { id = "fabric-loom", version.ref = "fabric_loom" }

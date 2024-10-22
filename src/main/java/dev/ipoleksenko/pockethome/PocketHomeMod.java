@@ -1,15 +1,111 @@
 package dev.ipoleksenko.pockethome;
 
+import dev.ipoleksenko.pockethome.event.EventPlayerJoin;
+import dev.ipoleksenko.pockethome.world.PocketWorld;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.nucleoid.fantasy.Fantasy;
+import xyz.nucleoid.fantasy.RuntimeWorldConfig;
+import xyz.nucleoid.fantasy.RuntimeWorldHandle;
+import xyz.nucleoid.fantasy.util.VoidChunkGenerator;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class PocketHomeMod implements ModInitializer {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(PocketHomeMod.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(PocketHomeMod.class);
+	private static final String WORLD_NAMESPACE = "pocket";
+	private static final Map<Identifier, RuntimeWorldHandle> RUNTIME_WORLD_HANDLERS = new ConcurrentHashMap<>();
+	public static Fantasy FANTASY;
+	private static RuntimeWorldConfig WORLD_CONFIG;
+
+	private static RuntimeWorldConfig getWorldConfig(MinecraftServer server) {
+		return new RuntimeWorldConfig().setWorldConstructor(PocketWorld::new)
+						.setGenerator(new VoidChunkGenerator(server.getRegistryManager().get(RegistryKeys.BIOME)))
+						.setDifficulty(Difficulty.EASY)
+						.setFlat(true);
+	}
+
+	private static void handleServerStarted(MinecraftServer server) {
+		FANTASY = Fantasy.get(server);
+		WORLD_CONFIG = getWorldConfig(server);
+	}
+
+	private static void handleServerStopping(MinecraftServer server) {
+		RUNTIME_WORLD_HANDLERS.forEach((id, handle) -> handle.unload());
+	}
+
+	@Contract("_ -> new")
+	public static @NotNull Identifier getPocketId(PlayerEntity player) {
+		return new Identifier(WORLD_NAMESPACE, player.getEntityName().toLowerCase());
+	}
+
+	public static ServerWorld getPocket(Identifier pocketId) {
+		final RuntimeWorldHandle worldHandler = FANTASY.getOrOpenPersistentWorld(pocketId, WORLD_CONFIG);
+		RUNTIME_WORLD_HANDLERS.putIfAbsent(pocketId, worldHandler);
+
+		return worldHandler.asWorld();
+	}
+
+	public static void moveToPocket(ServerPlayerEntity player) {
+		final Identifier identifier = getPocketId(player);
+		final ServerWorld world = getPocket(identifier);
+		player.moveToWorld(world);
+	}
 
 	@Override
 	public void onInitialize() {
-		LOGGER.info("O kurwa rakieta!");
+		ServerLifecycleEvents.SERVER_STARTED.register(PocketHomeMod::handleServerStarted);
+		ServerLifecycleEvents.SERVER_STOPPING.register(PocketHomeMod::handleServerStopping);
+
+		// TODO 9/14/23 3:01 AM @rvbsm Player will respawn at pocket cords if not teleport him
+		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+			final ServerPlayerEntity player = handler.player;
+			if (player.getServerWorld() instanceof PocketWorld) {
+				final BlockPos spawnPoint = player.getSpawnPointPosition();
+				final float spawnAngle = player.getSpawnAngle();
+				final RegistryKey<World> spawnDimension;
+				final ServerWorld spawnWorld = (spawnDimension = player.getSpawnPointDimension()) != null ? server.getWorld(spawnDimension) : server.getOverworld();
+				if (spawnWorld != null && spawnPoint != null) {
+					final Vec3d respawnPosition = PlayerEntity.findRespawnPosition(spawnWorld, spawnPoint, spawnAngle, player.isSpawnForced(), true)
+									.orElse(spawnWorld.getSpawnPos().toCenterPos());
+					if (respawnPosition != null)
+						player.teleport(spawnWorld, respawnPosition.x, respawnPosition.y, respawnPosition.z, spawnAngle, 0f);
+				}
+
+			}
+		});
+
+		ServerPlayConnectionEvents.INIT.register((handler, server) -> EventPlayerJoin.send(handler));
+
+		UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
+			BlockState blockState = world.getBlockState(hitResult.getBlockPos());
+			if (!world.isClient && player.isSneaking() && blockState.isOf(Blocks.ENDER_CHEST)) {
+				moveToPocket((ServerPlayerEntity) player);
+			}
+
+			return ActionResult.PASS;
+		});
 	}
 }

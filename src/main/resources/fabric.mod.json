@@ -3,7 +3,7 @@
 	"id": "pockethome",
 	"version": "${version}",
 	"name": "PocketHome",
-	"description": "O kurwa rakieta!",
+	"description": "PocketHome is a plugin that adds private areas for all players where they can build freely.",
 	"authors": [
 		"IPOleksenko",
 		"rvbsm"

@@ -24,7 +24,7 @@ public abstract class EntityMixin {
 	@Inject(method = "getTeleportTarget", at = @At("HEAD"), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
 	private void getTeleportTarget(ServerWorld destination, CallbackInfoReturnable<TeleportTarget> cir) {
 		if (destination instanceof PocketWorld)
-			cir.setReturnValue(new TeleportTarget(PocketWorld.POCKET_SPAWN_POS.toCenterPos(), Vec3d.ZERO, this.getYaw(), this.getPitch()));
+			cir.setReturnValue(new TeleportTarget(PocketWorld.POCKET_SPAWN_POS(11).toCenterPos(), Vec3d.ZERO, this.getYaw(), this.getPitch()));
 	}
 
 }

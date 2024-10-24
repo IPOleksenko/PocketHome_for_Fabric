@@ -4,7 +4,9 @@
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
 		"EntityMixin",
-		"PlayerFallMixin"
+		"PlayerFallMixin",
+		"NoDamageMixin",
+		"NoHungerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

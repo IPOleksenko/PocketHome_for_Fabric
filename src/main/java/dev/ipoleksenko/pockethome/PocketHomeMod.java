@@ -1,6 +1,8 @@
 package dev.ipoleksenko.pockethome;
 
 import dev.ipoleksenko.pockethome.event.EventPlayerJoin;
+import dev.ipoleksenko.pockethome.util.TeleportDataManager;
+import dev.ipoleksenko.pockethome.util.TeleportDataManager.TeleportData;
 import dev.ipoleksenko.pockethome.world.PocketWorld;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -42,9 +44,9 @@ public final class PocketHomeMod implements ModInitializer {
 
 	private static RuntimeWorldConfig getWorldConfig(MinecraftServer server) {
 		return new RuntimeWorldConfig().setWorldConstructor(PocketWorld::new)
-						.setGenerator(new VoidChunkGenerator(server.getRegistryManager().get(RegistryKeys.BIOME)))
-						.setDifficulty(Difficulty.EASY)
-						.setFlat(true);
+				.setGenerator(new VoidChunkGenerator(server.getRegistryManager().get(RegistryKeys.BIOME)))
+				.setDifficulty(Difficulty.EASY)
+				.setFlat(true);
 	}
 
 	private static void handleServerStarted(MinecraftServer server) {
@@ -71,7 +73,28 @@ public final class PocketHomeMod implements ModInitializer {
 	public static void moveToPocket(ServerPlayerEntity player) {
 		final Identifier identifier = getPocketId(player);
 		final ServerWorld world = getPocket(identifier);
+
+		// Save the player's current position and world
+		TeleportDataManager.saveTeleportData(player, player.getWorld(), player.getX(), player.getY(), player.getZ());
+
+		// Teleport the player to a custom world
 		player.moveToWorld(world);
+	}
+
+	public static void returnToOverworld(ServerPlayerEntity player) {
+		// Loading teleportation data
+		TeleportData data = TeleportDataManager.loadTeleportData(player);
+
+		if (data != null) {
+			// We get the server and the main world (Overworld)
+			MinecraftServer server = player.getServer();
+			ServerWorld overworld = server.getWorld(RegistryKey.of(RegistryKeys.WORLD, data.getFromWorld()));
+
+			if (overworld != null) {
+				// Teleport the player to saved coordinates in the main world
+				player.teleport(overworld, data.getX(), data.getY(), data.getZ(), player.getYaw(), player.getPitch());
+			}
+		}
 	}
 
 	@Override
@@ -89,11 +112,10 @@ public final class PocketHomeMod implements ModInitializer {
 				final ServerWorld spawnWorld = (spawnDimension = player.getSpawnPointDimension()) != null ? server.getWorld(spawnDimension) : server.getOverworld();
 				if (spawnWorld != null && spawnPoint != null) {
 					final Vec3d respawnPosition = PlayerEntity.findRespawnPosition(spawnWorld, spawnPoint, spawnAngle, player.isSpawnForced(), true)
-									.orElse(spawnWorld.getSpawnPos().toCenterPos());
+							.orElse(spawnWorld.getSpawnPos().toCenterPos());
 					if (respawnPosition != null)
 						player.teleport(spawnWorld, respawnPosition.x, respawnPosition.y, respawnPosition.z, spawnAngle, 0f);
 				}
-
 			}
 		});
 
@@ -102,7 +124,15 @@ public final class PocketHomeMod implements ModInitializer {
 		UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
 			BlockState blockState = world.getBlockState(hitResult.getBlockPos());
 			if (!world.isClient && player.isSneaking() && blockState.isOf(Blocks.ENDER_CHEST)) {
-				moveToPocket((ServerPlayerEntity) player);
+				ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
+				if (serverPlayer.getWorld() instanceof PocketWorld) {
+					// Teleport back to the normal world
+					returnToOverworld(serverPlayer);
+				} else {
+					// Teleport to a custom world
+					moveToPocket(serverPlayer);
+				}
+				return ActionResult.SUCCESS;
 			}
 
 			return ActionResult.PASS;

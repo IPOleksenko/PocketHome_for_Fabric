@@ -3,7 +3,8 @@
 	"package": "dev.ipoleksenko.pockethome.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
-		"EntityMixin"
+		"EntityMixin",
+		"PlayerFallMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

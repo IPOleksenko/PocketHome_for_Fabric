@@ -6,9 +6,7 @@ import dev.ipoleksenko.pockethome.util.TeleportDataManager.TeleportData;
 import dev.ipoleksenko.pockethome.world.PocketWorld;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.event.world.WorldTickCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -103,6 +101,8 @@ public final class PocketHomeMod implements ModInitializer {
 	public void onInitialize() {
 		ServerLifecycleEvents.SERVER_STARTED.register(PocketHomeMod::handleServerStarted);
 		ServerLifecycleEvents.SERVER_STOPPING.register(PocketHomeMod::handleServerStopping);
+
+		EventPlayerJoin.register();
 
 		// TODO 9/14/23 3:01 AM @rvbsm Player will respawn at pocket cords if not teleport him
 		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {

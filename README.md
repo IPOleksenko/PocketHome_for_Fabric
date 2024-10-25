@@ -13,7 +13,15 @@ Get the source from GitHub and build it with Gradle:
 ```shell
 git clone https://github.com/IPOleksenko/PocketHome_for_Fabric.git
 cd PocketHome_for_Fabric/
+```
+\
+For PocketHome compilations
+```
 ./gradlew build
+```
+To build and include Fabric API modules
+```
+./gradlew build -PwithFabricAPI
 ```
 
 ## Contributing

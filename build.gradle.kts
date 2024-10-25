@@ -8,14 +8,6 @@ plugins {
 group = "dev.ipoleksenko"
 version = gitVersion()
 
-//loom {
-//	splitEnvironmentSourceSets()
-//
-//	mods.register(rootProject.name) {
-//		sourceSet(sourceSets["main"])
-//	}
-//}
-
 repositories {
 	maven("https://maven.nucleoid.xyz/")
 }
@@ -23,23 +15,21 @@ repositories {
 dependencies {
 	minecraft(libs.minecraft)
 	mappings("net.fabricmc:yarn:${libs.versions.yarn.mappings.get()}:v2")
-
 	modImplementation(libs.fabric.loader)
+	// Include Fabric API in the mod
 	modImplementation(libs.fabric.api)
 
+
 	modImplementation(libs.fantasy)
+	include(libs.fantasy)
 
-//	setOf("fabric-events-interaction-v0").forEach {
-//		modImplementation(fabricApi.module(it, libs.versions.fabric.api.get()))
-//	}
-
-//	shadowImplementation(libs.nightconfig.core)
-//	shadowImplementation(libs.nightconfig.toml)
-//
-//	modApi(libs.modmenu)
-//	modApi(libs.clothconfig) {
-//		exclude(group = "net.fabricmc.fabric-api")
-//	}
+	if (project.hasProperty("withFabricAPI")) {
+		include(libs.fabric.api)
+		setOf("fabric-events-interaction-v0").forEach {
+			modImplementation(fabricApi.module(it, libs.versions.fabric.api.get()))
+			include(fabricApi.module(it, libs.versions.fabric.api.get()))
+		}
+	}
 }
 
 tasks {

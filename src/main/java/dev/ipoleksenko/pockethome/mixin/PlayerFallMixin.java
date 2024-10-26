@@ -36,6 +36,7 @@ public class PlayerFallMixin {
                 if (targetWorld != null) {
                     // Teleporting a player to saved coordinates
                     player.teleport(targetWorld, data.getX(), data.getY(), data.getZ(), player.getYaw(), player.getPitch());
+                    TeleportDataManager.savePocketCoordinates(player, 0, 325, 0);
                     player.fallDistance = 0.0F;
                 }
             }

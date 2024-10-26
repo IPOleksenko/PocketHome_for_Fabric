@@ -82,17 +82,25 @@ public final class PocketHomeMod implements ModInitializer {
 	}
 
 	public static void returnToOverworld(ServerPlayerEntity player) {
-		// Loading teleportation data
-		TeleportData data = TeleportDataManager.loadTeleportData(player);
+		// Load teleportation data
+		TeleportDataManager.TeleportData data = TeleportDataManager.loadTeleportData(player);
 
 		if (data != null) {
-			// We get the server and the main world (Overworld)
+			// Get the server and the main world (Overworld)
 			MinecraftServer server = player.getServer();
 			ServerWorld overworld = server.getWorld(RegistryKey.of(RegistryKeys.WORLD, data.getFromWorld()));
 
 			if (overworld != null) {
-				// Teleport the player to saved coordinates in the main world
-				player.teleport(overworld, data.getX(), data.getY(), data.getZ(), player.getYaw(), player.getPitch());
+				double targetX = data.getX();
+				double targetY = data.getY();
+				double targetZ = data.getZ();
+
+				// Save the player's current coordinates as pocketWorld before teleporting
+				TeleportDataManager.savePocketCoordinates(player, player.getX(), player.getY(), player.getZ());
+
+
+				// Teleport the player to the main world with specified coordinates
+				player.teleport(overworld, targetX, targetY, targetZ, player.getYaw(), player.getPitch());
 			}
 		}
 	}
@@ -104,7 +112,7 @@ public final class PocketHomeMod implements ModInitializer {
 
 		EventPlayerJoin.register();
 
-		// TODO 9/14/23 3:01 AM @rvbsm Player will respawn at pocket cords if not teleport him
+		// TODO 9/14/23 3:01 AM @rvbsm Player will respawn at pocket cords if not teleported
 		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
 			final ServerPlayerEntity player = handler.player;
 			if (player.getServerWorld() instanceof PocketWorld) {

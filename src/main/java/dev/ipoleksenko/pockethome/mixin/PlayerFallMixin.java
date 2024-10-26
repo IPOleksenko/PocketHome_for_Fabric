@@ -13,6 +13,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static dev.ipoleksenko.pockethome.PocketHomeMod.returnToOverworld;
+
 @Mixin(ServerPlayerEntity.class)
 public class PlayerFallMixin {
 
@@ -26,20 +28,10 @@ public class PlayerFallMixin {
         if (world.getRegistryKey().getValue().equals(pocketWorldId) && player.getY() < -5) {
             TeleportData data = TeleportDataManager.loadTeleportData(player);
 
-            if (data != null) {
-                // Getting the world where you want to teleport the player from saved data
-                ServerWorld targetWorld = player.getServer().getWorld(World.OVERWORLD);
-                if (data.getFromWorld() != null) {
-                    targetWorld = player.getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, data.getFromWorld()));
-                }
-
-                if (targetWorld != null) {
-                    // Teleporting a player to saved coordinates
-                    player.teleport(targetWorld, data.getX(), data.getY(), data.getZ(), player.getYaw(), player.getPitch());
-                    TeleportDataManager.savePocketCoordinates(player, 0, 325, 0);
-                    player.fallDistance = 0.0F;
-                }
-            }
+            // Teleporting a player to saved coordinates
+            returnToOverworld(player);
+            TeleportDataManager.savePocketCoordinates(player, 0, 325, 0);
+            player.fallDistance = 0.0F;
         }
     }
 }

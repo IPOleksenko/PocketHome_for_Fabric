@@ -6,7 +6,8 @@
 		"EntityMixin",
 		"PlayerFallMixin",
 		"NoDamageMixin",
-		"NoHungerMixin"
+		"NoDamageMixin",
+		"PlayerJoinMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

@@ -33,7 +33,7 @@ public class TeleportDataManager {
 
         JsonObject pocketWorldJson = new JsonObject();
         pocketWorldJson.addProperty("x", 0.0);
-        pocketWorldJson.addProperty("y", 0.0);
+        pocketWorldJson.addProperty("y", 325.0);
         pocketWorldJson.addProperty("z", 0.0);
         data.add("pocketWorld", pocketWorldJson);
 

@@ -2,7 +2,6 @@ package dev.ipoleksenko.pockethome;
 
 import dev.ipoleksenko.pockethome.event.EventPlayerJoin;
 import dev.ipoleksenko.pockethome.util.TeleportDataManager;
-import dev.ipoleksenko.pockethome.util.TeleportDataManager.TeleportData;
 import dev.ipoleksenko.pockethome.world.PocketWorld;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -18,10 +17,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -42,7 +38,7 @@ public final class PocketHomeMod implements ModInitializer {
 	public static Fantasy FANTASY;
 	private static RuntimeWorldConfig WORLD_CONFIG;
 
-	private static RuntimeWorldConfig getWorldConfig(MinecraftServer server) {
+	public static RuntimeWorldConfig getWorldConfig(MinecraftServer server) {
 		return new RuntimeWorldConfig().setWorldConstructor(PocketWorld::new)
 				.setGenerator(new VoidChunkGenerator(server.getRegistryManager().get(RegistryKeys.BIOME)))
 				.setDifficulty(Difficulty.EASY)
@@ -109,25 +105,6 @@ public final class PocketHomeMod implements ModInitializer {
 	public void onInitialize() {
 		ServerLifecycleEvents.SERVER_STARTED.register(PocketHomeMod::handleServerStarted);
 		ServerLifecycleEvents.SERVER_STOPPING.register(PocketHomeMod::handleServerStopping);
-
-		EventPlayerJoin.register();
-
-		// TODO 9/14/23 3:01 AM @rvbsm Player will respawn at pocket cords if not teleported
-		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
-			final ServerPlayerEntity player = handler.player;
-			if (player.getServerWorld() instanceof PocketWorld) {
-				final BlockPos spawnPoint = player.getSpawnPointPosition();
-				final float spawnAngle = player.getSpawnAngle();
-				final RegistryKey<World> spawnDimension;
-				final ServerWorld spawnWorld = (spawnDimension = player.getSpawnPointDimension()) != null ? server.getWorld(spawnDimension) : server.getOverworld();
-				if (spawnWorld != null && spawnPoint != null) {
-					final Vec3d respawnPosition = PlayerEntity.findRespawnPosition(spawnWorld, spawnPoint, spawnAngle, player.isSpawnForced(), true)
-							.orElse(spawnWorld.getSpawnPos().toCenterPos());
-					if (respawnPosition != null)
-						player.teleport(spawnWorld, respawnPosition.x, respawnPosition.y, respawnPosition.z, spawnAngle, 0f);
-				}
-			}
-		});
 
 		ServerPlayConnectionEvents.INIT.register((handler, server) -> EventPlayerJoin.send(handler));
 
